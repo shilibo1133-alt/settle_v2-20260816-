@@ -125,7 +125,7 @@
     <p class="hint">【每日价格】日期 价格，每行一组，空格或 Tab 分隔</p>
     <textarea id="daily_prices_1" rows="4" placeholder=""></textarea>
     <p class="hint">【A→B 付款明细】日期 金额(美元) 汇率，每行一笔<br>
-      <span class="opt-note">▸ 金额留空 = 尾款（自动倒推 = 最终货值 − 已付各笔，允许为负）<br>
+      <span class="opt-note">
       ▸ 每笔汇率独立；综合汇率 = 总人民币 ÷ 总美元（加权）</span></p>
     <textarea id="payments_ab" rows="4" placeholder=""></textarea>
   </section>
@@ -158,8 +158,7 @@
       <span class="opt-note">▸ 点价留空 = 本环节（D→E）不存在，将自动跳过</span></p>
     <textarea id="stage3_fixing" rows="3" placeholder=""></textarea>
     <p class="hint">【D→E 付款明细】日期 金额(元)，每行一笔<br>
-      <span class="opt-note">▸ 金额留空 = 尾款（自动倒推 = 最终货值 − 已付各笔，允许为负）<br>
-      ▸ 汇率统一沿用 A→B 的加权汇率，不单独输入</span></p>
+      <span class="opt-note">      ▸ 汇率统一沿用 A→B 的加权汇率，不单独输入</span></p>
     <textarea id="payments_de" rows="3" placeholder=""></textarea>
   </section>
 
