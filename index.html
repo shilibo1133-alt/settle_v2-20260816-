@@ -38,6 +38,9 @@
     font-family: Consolas, monospace; font-size: 13px; min-width: 0;
   }
   .hint { font-size: 12px; color: #555; margin: 8px 0 3px; }
+  .opt-note { color: #1a5fb4; }
+  .field.opt input { border-color: #9dc0e8; background: #fbfdff; }
+  .field.opt label::after { content: " 选"; color: #1a5fb4; font-size: 11px; }
   textarea {
     width: 100%; padding: 6px 8px;
     border: 1px solid #bbb; border-radius: 3px;
@@ -76,6 +79,11 @@
   .result-card th { background: #f4f7fb; width: 45%; font-weight: 600; white-space: nowrap; }
   .result-card td.num { text-align: right; font-family: Consolas, monospace; }
   .result-card td.flow { text-align: center; font-weight: bold; }
+  .res-note {
+    margin: 8px 0 2px; padding: 6px 10px;
+    background: #eef5ff; border-left: 3px solid #1a5fb4;
+    font-size: 12px; color: #14406e; line-height: 1.7;
+  }
   #btn-download {
     padding: 10px 22px; font-size: 15px; cursor: pointer;
     background: #1a5fb4; color: #fff; border: none; border-radius: 4px;
@@ -110,26 +118,29 @@
   <section class="step step1">
     <h2>① 步骤1 · A → B</h2>
     <div class="grid">
-      <div class="field"><label>最终数量(桶):</label><input data-key="final_quantity" data-label="最终数量(桶)"></div>
-      <div class="field"><label>总手数(手):</label><input data-key="total_hands_1" data-label="总手数(手)"></div>
+      <div class="field"><label>最终数量(桶):</label><input data-key="final_quantity_1" data-label="最终数量1(桶)"></div>
       <div class="field"><label>贴水:</label><input data-key="spread1" data-label="贴水"></div>
       <div class="field"><label>手续费:</label><input data-key="fee1" data-label="手续费"></div>
-      <div class="field"><label>第1次付款(美元):</label><input data-key="first_pay_usd" data-label="第1次付款(美元)"></div>
-      <div class="field"><label>汇率1:</label><input data-key="fx_rate_1" data-label="汇率1"></div>
-      <div class="field"><label>汇率2:</label><input data-key="fx_rate_2" data-label="汇率2"></div>
     </div>
-    <p class="hint">【日期 价格】每行一组，空格或 Tab 分隔</p>
+    <p class="hint">【每日价格】日期 价格，每行一组，空格或 Tab 分隔</p>
     <textarea id="daily_prices_1" rows="4" placeholder=""></textarea>
+    <p class="hint">【A→B 付款明细】日期 金额(美元) 汇率，每行一笔<br>
+      <span class="opt-note">▸ 金额留空 = 尾款（自动倒推 = 最终货值 − 已付各笔，允许为负）<br>
+      ▸ 每笔汇率独立；综合汇率 = 总人民币 ÷ 总美元（加权）</span></p>
+    <textarea id="payments_ab" rows="4" placeholder=""></textarea>
   </section>
 
   <!-- 步骤2 -->
   <section class="step step2">
     <h2>② 步骤2 · B → C</h2>
     <div class="grid">
+      <div class="field"><label>最终数量(桶):</label><input data-key="final_quantity_2" data-label="最终数量2(桶)"></div>
       <div class="field"><label>贴水:</label><input data-key="spread2" data-label="贴水"></div>
       <div class="field"><label>手续费:</label><input data-key="fee2" data-label="手续费"></div>
     </div>
-    <p class="hint">【日期 手数】每行一组，须与步骤1行数一致</p>
+    <p class="hint">【日期 价格 手数】每行一组<br>
+      <span class="opt-note">▸ 本区自带价格，与步骤1 无关：不要求行数一致、也不要求日期对齐<br>
+      ▸ 本环节可留空 = 该环节不存在，将自动跳过</span></p>
     <textarea id="daily_volumes_2" rows="4" placeholder=""></textarea>
   </section>
 
@@ -137,14 +148,19 @@
   <section class="step step3">
     <h2>③ 步骤3 · D → E</h2>
     <div class="grid">
+      <div class="field"><label>最终数量(桶):</label><input data-key="final_quantity_3" data-label="最终数量3(桶)"></div>
       <div class="field"><label>点价贴水:</label><input data-key="stage3_spread" data-label="点价贴水"></div>
       <div class="field"><label>手续费:</label><input data-key="stage3_fee" data-label="手续费"></div>
-      <div class="field"><label>预付款(元):</label><input data-key="stage3_prepay_cny" data-label="预付款(元)"></div>
     </div>
     <p class="hint">【转月】日期 单价 手数（每行一组，若无转月留空）</p>
     <textarea id="stage3_switch" rows="2" placeholder=""></textarea>
-    <p class="hint">【点价】日期 单价 手数（每行一组，必须填写）</p>
+    <p class="hint">【点价】日期 单价 手数（每行一组）<br>
+      <span class="opt-note">▸ 点价留空 = 本环节（D→E）不存在，将自动跳过</span></p>
     <textarea id="stage3_fixing" rows="3" placeholder=""></textarea>
+    <p class="hint">【D→E 付款明细】日期 金额(元)，每行一笔<br>
+      <span class="opt-note">▸ 金额留空 = 尾款（自动倒推 = 最终货值 − 已付各笔，允许为负）<br>
+      ▸ 汇率统一沿用 A→B 的加权汇率，不单独输入</span></p>
+    <textarea id="payments_de" rows="3" placeholder=""></textarea>
   </section>
 
   <!-- 操作区 -->
@@ -181,7 +197,7 @@
   </script>
 
   <footer>
-    模板分区支持 ===每日行情===、【每日行情】、##每日行情## 等写法<br>
+    模板分区支持 ===步骤1·每日价格===、【步骤1·每日价格】、##步骤1·每日价格## 等写法（步骤2 同理）<br>
     计算口径：金额 2 位小数 · 单价 3 位 · 汇率 4 位（四舍五入）
   </footer>
 </main>
@@ -328,24 +344,40 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   const E3 = 'HALF_EVEN'; // 单价/汇率：沿用 Python round() 银行家舍入
 
   /* ---------------- 结算流水线 ---------------- */
+  /** 判断"可选数值"是否为空（空串 / null / undefined） */
+  function isEmptyNum(x) {
+    return x === undefined || x === null || (typeof x === 'string' && x.trim() === '');
+  }
+  /** 可选数值：空视为 0，不报错 */
+  function optDec(x) {
+    return isEmptyNum(x) ? new Dec(0n, 2) : Dec.from(x);
+  }
+
   class TradeSettlementPipeline {
     constructor(cfg) {
       this.daily_prices_1 = cfg.daily_prices_1;       // [[日期, 价格]]
-      this.total_hands_1 = cfg.total_hands_1;
-      this.final_quantity = Dec.from(cfg.final_quantity);
+      // 每个环节使用各自独立的「最终数量(桶)」
+      // 步骤1 的数量必填；步骤2/3 的数量仅在环节启用时才需要，空视为 0（环节跳过不参与计算）
+      this.final_quantity_1 = Dec.from(cfg.final_quantity_1);
+      this.final_quantity_2 = optDec(cfg.final_quantity_2);
+      this.final_quantity_3 = optDec(cfg.final_quantity_3);
       this.spread1 = Dec.from(cfg.spread1);
       this.fee1 = Dec.from(cfg.fee1);
-      this.first_pay_usd1 = Dec.from(cfg.first_pay_usd);
-      this.fx_rate_1 = Dec.from(cfg.fx_rate_1);
-      this.fx_rate_2 = Dec.from(cfg.fx_rate_2);
-      this.daily_volumes_2 = cfg.daily_volumes_2;     // [[日期, 手数]]
-      this.spread2 = Dec.from(cfg.spread2);
-      this.fee2 = Dec.from(cfg.fee2);
+
+      // A→B 付款明细：[[日期, 金额(美元), 汇率]]；金额留空 = 尾款（自动倒推）
+      // 每笔汇率独立。至少一笔；尾款行最多一行（留空金额）。
+      this.payments_ab = cfg.payments_ab || [];
+
+      this.daily_volumes_2 = cfg.daily_volumes_2;     // 步骤2：[[日期, 价格, 手数]]（自带价格，与步骤1无关）
+      this.spread2 = optDec(cfg.spread2);
+      this.fee2 = optDec(cfg.fee2);
       this.stage3_switch_data = cfg.stage3_switch_data; // [[日期, 单价, 手数]]
       this.stage3_fixing_data = cfg.stage3_fixing_data; // [[日期, 单价, 手数]]
-      this.stage3_spread = Dec.from(cfg.stage3_spread);
-      this.stage3_fee = Dec.from(cfg.stage3_fee);
-      this.stage3_prepay_cny = Dec.from(cfg.stage3_prepay_cny);
+      this.stage3_spread = optDec(cfg.stage3_spread);
+      this.stage3_fee = optDec(cfg.stage3_fee);
+
+      // D→E 付款明细：[[金额(元)]]；金额留空 = 尾款（自动倒推）。汇率统一沿用 A→B 加权汇率。
+      this.payments_de = cfg.payments_de || [];
     }
 
     calculate() {
@@ -355,107 +387,201 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       for (const p of prices) sum = sum.add(p);
       const monthly_avg_price_1 = divRound(sum, Dec.from(prices.length), 3, E3);
       const final_unit_price_1 = monthly_avg_price_1.add(this.spread1).add(this.fee1).round(3, E3);
-      const final_cargo_value_usd_1 = this.final_quantity.mul(final_unit_price_1).round(2, M2);
-      const first_pay_cny_1 = this.first_pay_usd1.mul(this.fx_rate_1).round(2, M2);
-      const second_pay_usd_1 = final_cargo_value_usd_1.sub(this.first_pay_usd1).round(2, M2);
-      const second_pay_cny_1 = second_pay_usd_1.mul(this.fx_rate_2).round(2, M2);
-      const total_pay_cny_1 = first_pay_cny_1.add(second_pay_cny_1);
-      const total_pay_usd_1 = this.first_pay_usd1.add(second_pay_usd_1);
-      const diff_usd_1 = final_cargo_value_usd_1.sub(total_pay_usd_1).round(2, M2);
-      const weighted_exchange_rate = divRound(total_pay_cny_1, total_pay_usd_1, 4, E3);
+      const final_cargo_value_usd_1 = this.final_quantity_1.mul(final_unit_price_1).round(2, M2);
 
-      /* ---------- 第二步 ---------- */
-      if (this.daily_volumes_2.length !== this.daily_prices_1.length) {
-        throw new Error('第一步行数(' + this.daily_prices_1.length + ')与第二步行数(' +
-          this.daily_volumes_2.length + ')必须一致！');
+      /* —— A→B 多笔付款 ——
+       * 每笔 [日期, 金额(美元), 汇率]；金额留空 = 尾款（自动倒推，允许为负）。
+       * 综合汇率 = Σ(金额×汇率) ÷ Σ金额（加权）；尾款用自己那笔的汇率。 */
+      if (this.payments_ab.length === 0) throw new Error('A→B 付款明细不能为空！');
+      const ab_rows = [];
+      let ab_fixed_usd = new Dec(0n, 2);      // 手填金额合计（美元）
+      let ab_fixed_cny = new Dec(0n, 2);      // 手填金额折算人民币合计
+      let ab_tail_count = 0;                  // 尾款行计数（只允许一行）
+      for (const p of this.payments_ab) {
+        const amount = p[1];
+        const rate = Dec.from(p[2]);
+        if (isEmptyNum(amount)) {
+          // 尾款行：金额留空，汇率仍必填
+          ab_rows.push({ date: p[0], isTail: true, rate: rate, amount: null, cny: null });
+          ab_tail_count++;
+        } else {
+          const usd = Dec.from(amount).round(2, M2);
+          const cny = usd.mul(rate).round(2, M2);
+          ab_rows.push({ date: p[0], isTail: false, rate: rate, amount: usd, cny: cny });
+          ab_fixed_usd = ab_fixed_usd.add(usd);
+          ab_fixed_cny = ab_fixed_cny.add(cny);
+        }
       }
-      let stage2_total_hands = 0;
-      let stage2_total_usd = new Dec(0n, 2);
-      for (let i = 0; i < this.daily_volumes_2.length; i++) {
-        const hands = Number(this.daily_volumes_2[i][1]);
-        const daily_price = Dec.from(this.daily_prices_1[i][1]);
-        const daily_unit_price = daily_price.add(this.spread2).add(this.fee2).round(3, E3);
-        const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
-        stage2_total_hands += hands;
-        stage2_total_usd = stage2_total_usd.add(daily_usd);
+      if (ab_tail_count > 1) throw new Error('A→B 付款明细中最多只能有一笔尾款（金额留空）！');
+      // 尾款：仅当存在尾款行时才倒推 = 最终货值 − 手填金额合计（可为负 = 退款/冲回）；
+      // 无尾款行时尾款为 0，总支付 = 手填合计，差值金额体现未对齐部分。
+      const ab_tail_usd = (ab_tail_count > 0)
+        ? final_cargo_value_usd_1.sub(ab_fixed_usd).round(2, M2)
+        : new Dec(0n, 2);
+      const ab_tail_cny = ab_tail_usd.mul(ab_tail_count ? ab_rows.find(r => r.isTail).rate : new Dec(0n, 2)).round(2, M2);
+      const total_pay_usd_1 = ab_fixed_usd.add(ab_tail_usd);
+      const total_pay_cny_1 = ab_fixed_cny.add(ab_tail_cny);
+      // 差值金额(美元) = 手填金额合计（不含尾款） − 最终货值
+      const diff_usd_1 = ab_fixed_usd.sub(final_cargo_value_usd_1).round(2, M2);
+      // 差值金额(元) = 差值金额(美元) × 加权汇率（用下方算出的加权汇率，故延后到汇率确定后计算）
+      // 综合汇率 = 总人民币 ÷ 总美元；若总美元为 0，退化为首笔汇率
+      let weighted_exchange_rate;
+      if (total_pay_usd_1.isZero()) {
+        weighted_exchange_rate = ab_rows.length ? ab_rows[0].rate.round(4, E3) : new Dec(0n, 4);
+      } else {
+        weighted_exchange_rate = divRound(total_pay_cny_1, total_pay_usd_1, 4, E3);
       }
-      if (stage2_total_hands === 0) throw new Error('第二步的总手数不能为0！');
-      const stage2_final_unit_price = divRound(stage2_total_usd, Dec.from(stage2_total_hands * 1000), 3, E3);
-      stage2_total_usd = stage2_total_usd.round(2, E3);
-      const stage2_total_usd_r = stage2_final_unit_price.mul(this.final_quantity).round(2, E3);
-      const stage2_total_cny = stage2_total_usd_r.mul(weighted_exchange_rate).round(2, M2);
+      // 差值金额(元) = 差值金额(美元) × 加权汇率
+      const diff_cny_1 = diff_usd_1.mul(weighted_exchange_rate).round(2, M2);
 
-      /* ---------- 第三步 ---------- */
-      let stage3_switch_total_usd = new Dec(0n, 2);
-      let stage3_fixing_total_usd = new Dec(0n, 2);
-      let stage3_switch_hands = 0;
-      let stage3_fixing_hands = 0;
-      for (const row of this.stage3_switch_data) {
-        const unit_price = Dec.from(row[1]);
-        const hands = Number(row[2]);
-        const daily_unit_price = unit_price.add(this.stage3_fee);
-        const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
-        stage3_switch_total_usd = stage3_switch_total_usd.add(daily_usd);
-        stage3_switch_hands += hands;
-      }
-      for (const row of this.stage3_fixing_data) {
-        const unit_price = Dec.from(row[1]);
-        const hands = Number(row[2]);
-        const daily_unit_price = unit_price.add(this.stage3_spread).add(this.stage3_fee);
-        const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
-        stage3_fixing_total_usd = stage3_fixing_total_usd.add(daily_usd);
-        stage3_fixing_hands += hands;
-      }
-      const stage3_total_usd = stage3_switch_total_usd.add(stage3_fixing_total_usd);
-      const stage3_total_hands = stage3_fixing_hands;
-      if (stage3_total_hands === 0) throw new Error('第三步的点价总手数不能为0！');
-      const stage3_final_unit_price = divRound(stage3_total_usd, Dec.from(stage3_total_hands * 1000), 3, E3);
-      const stage3_final_cargo_usd = stage3_final_unit_price.mul(this.final_quantity).round(2, E3);
-      const stage3_final_cargo_cny = stage3_final_cargo_usd.mul(weighted_exchange_rate).round(2, M2);
-      const stage3_diff_cny = stage3_final_cargo_cny.sub(this.stage3_prepay_cny).round(2, M2);
-
-      return {
-        stage_1: {
-          '公司流转': 'A ---> B',
-          '总手数(手)': this.total_hands_1,
-          '最终数量(桶)': this.final_quantity,
-          '月均价(美元/桶)': monthly_avg_price_1,
-          '贴水(美元/桶)': this.spread1,
-          '手续费(美元/桶)': this.fee1,
-          '最终单价(美元/桶)': final_unit_price_1,
-          '最终货值(美元)': final_cargo_value_usd_1,
-          '第1次付款(美元)': this.first_pay_usd1,
-          '第1次付款(人民币)': first_pay_cny_1,
-          '第2次付款(美元)': second_pay_usd_1,
-          '第2次付款(人民币)': second_pay_cny_1,
-          '总支付人民币': total_pay_cny_1,
-          '预付款货值（美元）': total_pay_usd_1,
-          '差值金额(美元)': diff_usd_1,
-          '综合汇率(加权)': weighted_exchange_rate
-        },
-        stage_2: {
+      /* ---------- 第二步 ----------
+       * 步骤2 自带价格（日期 价格 手数），不再从步骤1取价格，
+       * 因此不再要求与步骤1行数一致、也不要求日期对齐。
+       * 数据为空 = 本环节不存在，跳过（不产出 stage_2）。 */
+      let stage2_result = null;
+      if (this.daily_volumes_2 && this.daily_volumes_2.length > 0) {
+        let stage2_total_hands = 0;
+        let stage2_total_usd = new Dec(0n, 2);        // 各行「(价格+贴水2+手续费2)×手数×1000」累计（美元）
+        for (let i = 0; i < this.daily_volumes_2.length; i++) {
+          const row = this.daily_volumes_2[i];
+          const hands = Number(row[2]);                 // 第3列 = 手数
+          const daily_price = Dec.from(row[1]);         // 第2列 = 本行自己的价格
+          const daily_unit_price = daily_price.add(this.spread2).add(this.fee2);
+          const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
+          stage2_total_hands += hands;
+          stage2_total_usd = stage2_total_usd.add(daily_usd);
+        }
+        if (stage2_total_hands === 0) throw new Error('第二步的总手数不能为0！');
+        // 最终单价 = 总金额(美元) ÷ (总手数 × 1000)
+        const stage2_total_usd_r = stage2_total_usd.round(2, M2);
+        const stage2_final_unit_price = divRound(stage2_total_usd_r, Dec.from(stage2_total_hands * 1000), 3, E3);
+        const stage2_final_cargo_usd = stage2_final_unit_price.mul(this.final_quantity_2).round(2, E3);
+        const stage2_total_cny = stage2_final_cargo_usd.mul(weighted_exchange_rate).round(2, M2);
+        stage2_result = {
           '公司流转': 'B ---> C',
-          '最终数量（桶）': this.final_quantity,
-          '总金额(美元)': stage2_total_usd,
+          '最终数量（桶）': this.final_quantity_2,
           '总手数(手)': stage2_total_hands,
+          '总金额(美元)': stage2_total_usd_r,
           '最终单价(美元/桶)': stage2_final_unit_price,
-          '最终货值(美元)': stage2_total_usd_r,
+          '最终货值(美元)': stage2_final_cargo_usd,
           '付款加权汇率(沿用第一步)': weighted_exchange_rate,
-          '最终货值(人民币)': stage2_total_cny
-        },
-        stage_3: {
+          '最终货值(人民币)': stage2_total_cny,
+          '差值金额(元)': stage2_total_cny
+        };
+      }
+
+      /* ---------- 第三步 ----------
+       * 数据为空（无点价数据）= 本环节不存在，跳过（不产出 stage_3）。
+       * 转月（switch）可空，点价（fixing）为空则整环节跳过。 */
+      let stage3_result = null;
+      if (this.stage3_fixing_data && this.stage3_fixing_data.length > 0) {
+        let stage3_switch_total_usd = new Dec(0n, 2);
+        let stage3_fixing_total_usd = new Dec(0n, 2);
+        let stage3_switch_hands = 0;
+        let stage3_fixing_hands = 0;
+        for (const row of this.stage3_switch_data) {
+          const unit_price = Dec.from(row[1]);
+          const hands = Number(row[2]);
+          const daily_unit_price = unit_price.add(this.stage3_fee);
+          const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
+          stage3_switch_total_usd = stage3_switch_total_usd.add(daily_usd);
+          stage3_switch_hands += hands;
+        }
+        for (const row of this.stage3_fixing_data) {
+          const unit_price = Dec.from(row[1]);
+          const hands = Number(row[2]);
+          const daily_unit_price = unit_price.add(this.stage3_spread).add(this.stage3_fee);
+          const daily_usd = daily_unit_price.mul(Dec.from(hands)).mul(1000).round(2, M2);
+          stage3_fixing_total_usd = stage3_fixing_total_usd.add(daily_usd);
+          stage3_fixing_hands += hands;
+        }
+        const stage3_total_usd = stage3_switch_total_usd.add(stage3_fixing_total_usd);
+        const stage3_total_hands = stage3_fixing_hands;
+        if (stage3_total_hands === 0) throw new Error('第三步的点价总手数不能为0！');
+        const stage3_final_unit_price = divRound(stage3_total_usd, Dec.from(stage3_total_hands * 1000), 3, E3);
+        const stage3_final_cargo_usd = stage3_final_unit_price.mul(this.final_quantity_3).round(2, E3);
+        const stage3_final_cargo_cny = stage3_final_cargo_usd.mul(weighted_exchange_rate).round(2, M2);
+
+        /* —— D→E 多笔付款（元）——
+         * 每笔 [日期, 金额(元)]；金额留空 = 尾款（自动倒推，允许为负）。
+         * 汇率统一沿用 A→B 的加权汇率，不单独输入。 */
+        const de_rows = [];
+        let de_fixed_cny = new Dec(0n, 2);
+        let de_tail_count = 0;
+        for (const p of this.payments_de) {
+          const date = p[0];
+          const amount = p[1];
+          if (isEmptyNum(amount)) {
+            de_rows.push({ date: date, isTail: true, amount: null });
+            de_tail_count++;
+          } else {
+            const cny = Dec.from(amount).round(2, M2);
+            de_rows.push({ date: date, isTail: false, amount: cny });
+            de_fixed_cny = de_fixed_cny.add(cny);
+          }
+        }
+        if (de_tail_count > 1) throw new Error('D→E 付款明细中最多只能有一笔尾款（金额留空）！');
+        // 尾款：仅当存在尾款行时才倒推 = 最终货值 − 手填合计（可为负）；无尾款行则尾款=0
+        const de_tail_cny = (de_tail_count > 0)
+          ? stage3_final_cargo_cny.sub(de_fixed_cny).round(2, M2)
+          : new Dec(0n, 2);
+        const stage3_total_pay_cny = de_fixed_cny.add(de_tail_cny);
+        // 差值金额 = 最终货值 − 手填金额合计（不含尾款），即「未付清部分」
+        const stage3_diff_cny = stage3_final_cargo_cny.sub(de_fixed_cny).round(2, M2);
+
+        stage3_result = {
           '公司流转': 'D ---> E',
-          '最终数量（桶）': this.final_quantity,
+          '最终数量（桶）': this.final_quantity_3,
           '转月总金额(美元)': stage3_switch_total_usd,
           '点价总金额(美元)': stage3_fixing_total_usd,
           '最终单价（美元/桶）': stage3_final_unit_price,
           '最终货值（美元）': stage3_final_cargo_usd,
           '付款加权汇率': weighted_exchange_rate,
           '最终货值（元）': stage3_final_cargo_cny,
-          '预付款货值（元）': this.stage3_prepay_cny,
-          '差值金额（元）': stage3_diff_cny
+          '总支付（元）': stage3_total_pay_cny,
+          '差值金额（元）': stage3_diff_cny,
+          /* 付款明细（逐笔） */
+          '_付款明细': de_rows.map(r => ({
+            日期: r.date, 尾款: r.isTail,
+            金额元: r.isTail ? de_tail_cny : r.amount
+          })),
+          '_尾款元': de_tail_cny,
+          '_有尾款': de_tail_count > 0,
+          '_多笔付款': this.payments_de.length > 1
+        };
+      }
+
+      const result = {
+        stage_1: {
+          '公司流转': 'A ---> B',
+          '最终数量(桶)': this.final_quantity_1,
+          '月均价(美元/桶)': monthly_avg_price_1,
+          '贴水(美元/桶)': this.spread1,
+          '手续费(美元/桶)': this.fee1,
+          '最终单价(美元/桶)': final_unit_price_1,
+          '最终货值(美元)': final_cargo_value_usd_1,
+          '总支付(美元)': total_pay_usd_1,
+          '总支付(人民币)': total_pay_cny_1,
+          '差值金额(美元)': diff_usd_1,
+          '差值金额(元)': diff_cny_1,
+          '综合汇率(加权)': weighted_exchange_rate,
+          /* 付款明细（供界面/导出逐笔展示） */
+          '_付款明细': ab_rows.map(r => ({
+            日期: r.date, 尾款: r.isTail,
+            金额美元: r.amount === null ? ab_tail_usd : r.amount,
+            汇率: r.rate,
+            人民币: r.isTail ? ab_tail_cny : r.cny
+          })),
+          '_尾款美元': ab_tail_usd,
+          '_尾款人民币': ab_tail_cny,
+          '_有尾款': ab_tail_count > 0,
+          '_多笔付款': this.payments_ab.length > 1
         }
       };
+      // 步骤2、步骤3：仅在数据非空时才产出对应环节
+      if (stage2_result) result.stage_2 = stage2_result;
+      if (stage3_result) result.stage_3 = stage3_result;
+      return result;
     }
   }
 
@@ -474,7 +600,47 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     return data;
   }
 
-  return { Dec, divRound, TradeSettlementPipeline, parseLines };
+  /* ---------------- 付款明细解析 ----------------
+   * A→B：每行 [日期 金额 汇率]，金额留空 = 尾款 → 返回 [[日期, 金额或'', 汇率]]
+   * D→E：每行 [金额]，金额留空 = 尾款 → 返回 [[金额或'']] */
+  function parsePaymentsAB(text) {
+    const rows = [];
+    const lines = String(text || '').split('\n');
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      const parts = line.replace(/,/g, ' ').split(/\s+/);
+      if (parts.length < 2) continue;   // 至少要有日期和汇率（金额可空）
+      // 兼容两种：日期 金额 汇率（3列） 或 日期 (空) 汇率（2列）
+      if (parts.length >= 3) {
+        rows.push([parts[0], parts[1], parts[2]]);
+      } else {
+        rows.push([parts[0], '', parts[1]]);   // 2列 = 日期 汇率，金额留空（尾款）
+      }
+    }
+    return rows;
+  }
+  function parsePaymentsDE(text) {
+    const rows = [];
+    const lines = String(text || '').split('\n');
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      // 两列：日期 金额(元)；金额可能带千分位逗号（如 57,844,478.19）
+      let parts = line.split(/[\t\s]+/);
+      parts = parts.filter(function (p) { return p !== ''; });
+      if (parts.length === 0) continue;
+      // 去掉金额里的千分位逗号
+      let amt = parts[parts.length - 1].replace(/,/g, '');
+      // 日期 = 第一个字段；若只有一列（旧格式单列金额），则日期留空
+      let date = parts.length >= 2 ? parts[0] : '';
+      if (/^(尾款|空|-|--|待定)$/.test(amt)) { rows.push([date, '']); }
+      else { rows.push([date, amt]); }
+    }
+    return rows;
+  }
+
+  return { Dec, divRound, TradeSettlementPipeline, parseLines, parsePaymentsAB, parsePaymentsDE };
 });
 </script>
 <script>/* ============================================================
@@ -489,18 +655,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   var E = root.SettlementEngine;
 
   var PARAM_MAP = {
-    final_quantity: '最终数量(桶)',
-    total_hands_1: '总手数(手)',
+    final_quantity_1: '最终数量1(桶)',
+    final_quantity_2: '最终数量2(桶)',
+    final_quantity_3: '最终数量3(桶)',
     spread1: '贴水1(美元/桶)',
     fee1: '手续费1(美元/桶)',
-    first_pay_usd: '第1次付款(美元)',
-    fx_rate_1: '汇率1',
-    fx_rate_2: '汇率2',
     spread2: '贴水2(美元/桶)',
     fee2: '手续费2(美元/桶)',
     stage3_spread: '点价贴水(美元/桶)',
-    stage3_fee: '手续费3(美元/桶)',
-    stage3_prepay_cny: '预付款(元)'
+    stage3_fee: '手续费3(美元/桶)'
   };
   var EXCEL_TO_KEY = {};
   Object.keys(PARAM_MAP).forEach(function (k) { EXCEL_TO_KEY[PARAM_MAP[k]] = k; });
@@ -574,9 +737,20 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   }
   function detectSection(s, bEmpty, cEmpty) {
     if (typeof s === 'string' && s && bEmpty && cEmpty) {
+      // 只有「明确标题格式」才视为分区标题（【】/ === / ## 开头），
+      // 避免参数字段名（如"点价贴水"）或注释行（含"转月/步骤1"）被误判为分区。
+      var isTitle = s.charAt(0) === '【' || s.indexOf('===') === 0 || s.indexOf('##') === 0;
+      if (!isTitle) return null;
+      // 步骤1 / 步骤2 各自的每日价格区（新口径：两个环节独立）
+      // 用「【步骤1」「【步骤2」前缀精确匹配，避免标题说明文字里交叉提到"步骤1/步骤2"造成误判
+      if (s.indexOf('【步骤1') >= 0 && s.indexOf('价格') >= 0) return 'daily1';
+      if (s.indexOf('【步骤2') >= 0 && s.indexOf('价格') >= 0) return 'daily2';
+      // 旧模板兜底：单一「每日行情」区
       if (s.indexOf('每日行情') >= 0) return 'daily';
       if (s.indexOf('转月') >= 0) return 'switch';
       if (s.indexOf('点价') >= 0) return 'fixing';
+      if (s.indexOf('AB付款') >= 0 || s.indexOf('A→B付款') >= 0 || s.indexOf('A-B付款') >= 0) return 'pay_ab';
+      if (s.indexOf('DE付款') >= 0 || s.indexOf('D→E付款') >= 0 || s.indexOf('D-E付款') >= 0) return 'pay_de';
     }
     return null;
   }
@@ -674,7 +848,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   }
 
   function parseTemplateWorkbook(wb, formulaMap) {
-    var out = { params: {}, prices: [], volumes: [], switchRows: [], fixingRows: [] };
+    var out = { params: {}, prices: [], volumes: [], switchRows: [], fixingRows: [], payABRows: [], payDERows: [] };
     var ws = wb.Sheets[wb.SheetNames[0]];
     if (!ws || !ws['!ref']) return out;
     var range = XLSX.utils.decode_range(ws['!ref']);
@@ -709,6 +883,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 
       if (!aText && bEmpty && cEmpty) continue; // 空行
 
+      // 注释/说明行：无论处于哪个分区，一律跳过，不当作数据
+      // （兼容旧模板残留的「注：/ 说明：/ 备注：/ 注意：」等说明文字）
+      if (aText && bEmpty && cEmpty && /^(注|说明|备注|注意|提示)[：:：]/.test(aText)) continue;
+
       if (mode === 'params') {
         if (aText) {
           var value = cellNum(cB);
@@ -720,16 +898,51 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         continue;
       }
 
+      // 付款明细区：AB（日期 金额 汇率）/ DE（金额）
+      if (mode === 'pay_ab') {
+        var abAmt = cellNum(cB);
+        var abRate = cellNum(cC);
+        if (aText && abRate !== '') {
+          out.payABRows.push(aText + ' ' + (abAmt === '' ? '' : abAmt) + ' ' + abRate);
+        }
+        continue;
+      }
+      if (mode === 'pay_de') {
+        // DE付款：A列=日期，B列=金额(元)；「尾款/空/-」等占位符 → 金额留空（尾款）
+        var deDate = normalizeDateStr(aText);
+        var deAmt = cellNum(cB);
+        if (deDate && deAmt !== '') {
+          out.payDERows.push(deDate + ' ' + deAmt);
+        } else if (deDate && /^(尾款|空|-|--|待定)$/.test(String(deAmt))) {
+          out.payDERows.push(deDate + ' 尾款');
+        } else if (deDate) {
+          // 有日期、金额留空 → 尾款
+          out.payDERows.push(deDate + ' ');
+        }
+        continue;
+      }
+
       // 数据区：A=日期，B=价格/单价，C=手数
       var dateStr = normalizeDateStr(aText);
       var price = cellNum(cB);
       var hands = cellNum(cC);
+      // 步骤1 每日价格区：2 列（日期 价格），无手数
+      if (mode === 'daily1') {
+        if (dateStr && price !== '') {
+          out.prices.push(dateStr + ' ' + numToText(price));
+        }
+        continue;
+      }
+      // 其余数据区：3 列（日期 价格 手数）
       if (dateStr && price !== '' && hands !== '') {
         var handsInt = Math.round(Number(hands));
         var priceStr = numToText(price);
-        if (mode === 'daily') {
+        if (mode === 'daily2') {
+          out.volumes.push(dateStr + ' ' + priceStr + ' ' + handsInt); // 步骤2：自带价格
+        } else if (mode === 'daily') {
+          // 旧模板兜底：单一「每日行情」区同时喂步骤1（前2列）和步骤2（3列）
           out.prices.push(dateStr + ' ' + priceStr);
-          out.volumes.push(dateStr + ' ' + handsInt);
+          out.volumes.push(dateStr + ' ' + priceStr + ' ' + handsInt);
         } else if (mode === 'switch') {
           out.switchRows.push(dateStr + ' ' + priceStr + ' ' + handsInt);
         } else if (mode === 'fixing') {
@@ -742,32 +955,29 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 
   /* ---------- 结果 Excel（与桌面版 save_results_to_excel 同版式） ---------- */
   var LEFT1 = [
-    ['总手数（手）', '总手数(手)'],
     ['最终数量（桶）', '最终数量(桶)'],
     ['最终单价（美元/桶）', '最终单价(美元/桶)'],
     ['最终货值（美元）', '最终货值(美元)'],
-    ['预付款货值（美元）', '最终货值(美元)'],
+    ['总支付（美元）', '总支付(美元)'],
+    ['总支付（人民币）', '总支付(人民币)'],
     ['差值金额（美元）', '差值金额(美元)'],
+    ['差值金额（元）', '差值金额(元)'],
     ['综合汇率（加权）', '综合汇率(加权)']
   ];
   var RIGHT1 = [
     ['月均价（美元/桶）', '月均价(美元/桶)'],
     ['贴水（美元/桶）', '贴水(美元/桶)'],
-    ['手续费（美元/桶）', '手续费(美元/桶)'],
-    ['第1次付款（美元）', '第1次付款(美元)'],
-    ['第1次付款（人民币）', '第1次付款(人民币)'],
-    ['第2次付款（美元）', '第2次付款(美元)'],
-    ['第2次付款（人民币）', '第2次付款(人民币)'],
-    ['总支付人民币', '总支付人民币']
+    ['手续费（美元/桶）', '手续费(美元/桶)']
   ];
   var LEFT2 = [
     ['总手数（手）', '总手数(手)'],
     ['总金额（美元）', '总金额(美元)'],
-    ['最终数量（桶）', null],
+    ['最终数量（桶）', '最终数量（桶）'],
     ['最终单价（美元/桶）', '最终单价(美元/桶)'],
     ['最终货值（美元）', '最终货值(美元)'],
     ['付款加权汇率（沿用第一步）', '付款加权汇率(沿用第一步)'],
-    ['最终货值（人民币）', '最终货值(人民币)']
+    ['最终货值（人民币）', '最终货值(人民币)'],
+    ['差值金额（元）', '差值金额(元)']
   ];
   var LEFT3 = [
     ['转月总金额（美元）', '转月总金额(美元)'],
@@ -777,7 +987,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     ['最终货值（美元）', '最终货值（美元）'],
     ['付款加权汇率', '付款加权汇率'],
     ['最终货值（元）', '最终货值（元）'],
-    ['预付款货值（元）', '预付款货值（元）'],
+    ['总支付（元）', '总支付（元）'],
     ['差值金额（元）', '差值金额（元）']
   ];
 
@@ -819,21 +1029,50 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     var C = window.RESULT_COPY || {};
     var s1 = results.stage_1, s2 = results.stage_2, s3 = results.stage_3;
 
-    title(0, C.excel1 || 'A ---> B');
-    LEFT1.forEach(function (it, i) { writeItem(2 + i, 0, it[0], s1[it[1]]); });
-    RIGHT1.forEach(function (it, i) { writeItem(2 + i, 2, it[0], s1[it[1]]); });
+    var r = 0;
+    // —— A → B ——（步骤1 始终存在）
+    title(r++, C.excel1 || 'A ---> B');
+    LEFT1.forEach(function (it) { writeItem(r++, 0, it[0], s1[it[1]]); });
+    // 付款明细逐笔（若有）
+    if (s1['_付款明细'] && s1['_付款明细'].length) {
+      writeItem(r++, 0, '——付款明细——', null);
+      setCell(r, 0, '日期'); setCell(r, 1, '金额(美元)'); setCell(r, 2, '汇率'); setCell(r, 3, '人民币'); r++;
+      s1['_付款明细'].forEach(function (p) {
+        setCell(r, 0, p['日期'] === undefined ? '' : String(p['日期']));
+        setCell(r, 1, decToNum('金额', p['金额美元']), '#,##0.00');
+        setCell(r, 2, decToNum('汇率', p['汇率']), '#,##0.0000');
+        setCell(r, 3, decToNum('金额', p['人民币']), '#,##0.00');
+        r++;
+      });
+    }
+    RIGHT1.forEach(function (it) { writeItem(r, 2, it[0], s1[it[1]]); r++; });
+    r++;
 
-    title(11, C.excel2 || 'B ---> C');
-    LEFT2.forEach(function (it, i) {
-      var v = it[1] === null ? s1['最终数量(桶)'] : s2[it[1]];
-      writeItem(13 + i, 0, it[0], v);
-    });
+    // —— B → C ——（仅当存在）
+    if (s2) {
+      title(r, C.excel2 || 'B ---> C'); r++;
+      LEFT2.forEach(function (it) { writeItem(r++, 0, it[0], s2[it[1]]); });
+      r++;
+    }
 
-    title(22, C.excel3 || 'D ---> E');
-    LEFT3.forEach(function (it, i) { writeItem(24 + i, 0, it[0], s3[it[1]]); });
+    // —— D → E ——（仅当存在）
+    if (s3) {
+      title(r, C.excel3 || 'D ---> E'); r++;
+      LEFT3.forEach(function (it) { writeItem(r++, 0, it[0], s3[it[1]]); });
+      // 付款明细逐笔（若有）
+      if (s3['_付款明细'] && s3['_付款明细'].length) {
+        writeItem(r++, 0, '——付款明细——', null);
+        setCell(r, 0, '日期'); setCell(r, 1, '金额(元)'); r++;
+        s3['_付款明细'].forEach(function (p) {
+          setCell(r, 0, p['日期'] === undefined ? '' : String(p['日期']));
+          setCell(r, 1, decToNum('金额', p['金额元']), '#,##0.00');
+          r++;
+        });
+      }
+    }
 
     ws['!cols'] = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }];
-    ws['!ref'] = 'A1:D33';
+    ws['!ref'] = 'A1:D' + r;
     XLSX.utils.book_append_sheet(wb, ws, '结算汇总');
     return wb;
   }
@@ -843,16 +1082,34 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     var wb = XLSX.utils.book_new();
     var ws = {};
     var r = 0;
-    Object.keys(PARAM_MAP).forEach(function (k) {
-      setCellSimple(ws, r, 0, PARAM_MAP[k]);
+
+    // 参数按步骤分三组（字段名与 PARAM_MAP 的 value 一致，导入时据此回填）
+    var groups = [
+      ['① A → B（步骤1，必填）', ['最终数量1(桶)', '贴水1(美元/桶)', '手续费1(美元/桶)']],
+      ['② B → C（步骤2，可留空=跳过）', ['最终数量2(桶)', '贴水2(美元/桶)', '手续费2(美元/桶)']],
+      ['③ D → E（步骤3，可留空=跳过）', ['最终数量3(桶)', '点价贴水(美元/桶)', '手续费3(美元/桶)']]
+    ];
+    groups.forEach(function (g) {
+      setCellSimple(ws, r, 0, g[0]); r++;
+      g[1].forEach(function (label) {
+        setCellSimple(ws, r, 0, label);
+        r++;
+      });
       r++;
     });
-    r++;
-    setCellSimple(ws, r, 0, '【每日行情】（A列:日期 B列:价格 C列:手数）'); r++;
-    r++;
+
+    setCellSimple(ws, r, 0, '【步骤1·每日价格】（A列:日期 B列:价格，2列；每行一组）'); r++;
+    r++; r++; r++; // 预留 3 行空行
+    setCellSimple(ws, r, 0, '【AB付款】（A列:日期 B列:金额美元 C列:汇率；金额留空=尾款自动倒推）'); r++;
+    r++; r++; r++;
+    setCellSimple(ws, r, 0, '【步骤2·每日价格手数】（A列:日期 B列:价格 C列:手数，3列；自带价格，与步骤1无关）'); r++;
+    r++; r++; r++;
     setCellSimple(ws, r, 0, '【转月】（A列:日期 B列:单价 C列:手数，无则留空）'); r++;
-    r++;
+    r++; r++; r++;
     setCellSimple(ws, r, 0, '【点价】（A列:日期 B列:单价 C列:手数，必填）'); r++;
+    r++; r++; r++;
+    setCellSimple(ws, r, 0, '【DE付款】（A列:日期 B列:金额元；金额留空=尾款自动倒推，汇率沿用AB加权汇率）'); r++;
+    r++;
     ws['!cols'] = [{ wch: 24 }, { wch: 16 }, { wch: 12 }];
     ws['!ref'] = 'A1:C' + (r + 1);
     XLSX.utils.book_append_sheet(wb, ws, '结算模板');
@@ -904,7 +1161,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     try {
       var data = { inputs: {}, areas: {} };
       inputEls().forEach(function (el) { data.inputs[el.dataset.key] = el.value; });
-      ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing'].forEach(function (id) {
+      ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing', 'payments_ab', 'payments_de'].forEach(function (id) {
         data.areas[id] = $(id).value;
       });
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -918,43 +1175,66 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       inputEls().forEach(function (el) {
         if (data.inputs && data.inputs[el.dataset.key] !== undefined) el.value = data.inputs[el.dataset.key];
       });
-      ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing'].forEach(function (id) {
+      ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing', 'payments_ab', 'payments_de'].forEach(function (id) {
         if (data.areas && data.areas[id] !== undefined) $(id).value = data.areas[id];
       });
     } catch (e) { /* 忽略 */ }
   }
 
   /* ----- 提交计算 ----- */
+
+  /* 仅当环节启用时才需要的字段：这些框允许留空，由引擎在环节执行时按需校验。
+   * 步骤1 的字段（final_quantity_1 / spread1 / fee1）仍必填。 */
+  var OPTIONAL_KEYS = {
+    final_quantity_2: 1, final_quantity_3: 1,
+    spread2: 1, fee2: 1,
+    stage3_spread: 1, stage3_fee: 1
+  };
+
   function submit() {
     try {
       var params = {};
       var missing = [];
       inputEls().forEach(function (el) {
         var v = el.value.trim();
-        if (!v) missing.push(el.dataset.label);
+        if (!v && !OPTIONAL_KEYS[el.dataset.key]) missing.push(el.dataset.label);
         params[el.dataset.key] = v;
       });
       if (missing.length) throw new Error('请填写基础参数：' + missing[0]);
 
       var dailyPrices = E.parseLines($('daily_prices_1').value, 2);
-      var dailyVolumes = E.parseLines($('daily_volumes_2').value, 2);
+      var dailyVolumes = E.parseLines($('daily_volumes_2').value, 3); // 步骤2：日期 价格 手数
       var sw = E.parseLines($('stage3_switch').value, 3);
       var fx = E.parseLines($('stage3_fixing').value, 3);
+      var payAB = E.parsePaymentsAB($('payments_ab').value);
+      var payDE = E.parsePaymentsDE($('payments_de').value);
 
       if (!dailyPrices.length) throw new Error('步骤1价格数据不能为空！');
-      if (dailyPrices.length !== dailyVolumes.length) throw new Error('步骤2与步骤1的行数必须一致！');
-      if (!fx.length) throw new Error('步骤3点价数据不能为空！');
+      if (!payAB.length) throw new Error('A→B 付款明细不能为空！');
+      // 步骤2、步骤3 可留空：留空 = 该环节不存在，引擎会自动跳过
+
+      // 非阻断提示：两区行数完全相同，可能是把数据粘错区块（步骤2自带价格后不再有行数约束）
+      var dupHint = '';
+      if (dailyVolumes.length === dailyPrices.length) {
+        var sameSum = dailyVolumes.every(function (r, i) {
+          return String(r[1]) === String(dailyPrices[i][1]);
+        });
+        if (sameSum) dupHint = '检测到步骤1与步骤2的行数和价格完全一致，请确认没有把同一份数据填进两个区块。';
+      }
 
       var results = new E.TradeSettlementPipeline(Object.assign({}, params, {
         daily_prices_1: dailyPrices,
         daily_volumes_2: dailyVolumes,
         stage3_switch_data: sw,
-        stage3_fixing_data: fx
+        stage3_fixing_data: fx,
+        payments_ab: payAB,
+        payments_de: payDE
       })).calculate();
 
       lastResults = results;
       renderResults(results);
-      toast('结算完成！结果见下方，可下载 Excel', 'ok');
+      toast(dupHint ? '结算完成！⚠ ' + dupHint : '结算完成！结果见下方，可下载 Excel',
+        dupHint ? 'err' : 'ok');
       $('result-section').hidden = false;
       $('result-section').scrollIntoView({ behavior: 'smooth' });
     } catch (e) {
@@ -963,16 +1243,49 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   }
 
   /* ----- 结果渲染 ----- */
+  var INTERNAL_KEYS = { '_单次付款': 1, '_第1次付款留空': 1, '_无预付款': 1,
+    '_付款明细': 1, '_尾款美元': 1, '_尾款人民币': 1, '_尾款元': 1, '_有尾款': 1, '_多笔付款': 1 };
+
   function renderResults(results) {
     var C = window.RESULT_COPY || {};
-    var stages = [
-      [C.stage1 || '第一步 · A → B', results.stage_1, C.flow1],
-      [C.stage2 || '第二步 · B → C', results.stage_2, C.flow2],
-      [C.stage3 || '第三步 · D → E', results.stage_3, C.flow3]
-    ];
+    var s1 = results.stage_1;
+    var notes1 = [];
+    var pay1 = s1['_付款明细'] || [];
+    if (pay1.length) {
+      notes1.push('A→B 付款明细（' + pay1.length + ' 笔）：' + pay1.map(function (p) {
+        var amt = fmtValue('金额', p['金额美元']);
+        var tag = p['尾款'] ? '尾款' : '';
+        return (p['日期'] === undefined ? '' : p['日期'] + ' ') + amt + ' 美元 @ ' +
+          fmtValue('汇率', p['汇率']) + (tag ? '（' + tag + '）' : '');
+      }).join('；') + '。');
+      if (s1['_有尾款']) {
+        notes1.push('尾款 = 最终货值 − 已付各笔 = ' + fmtValue('金额', s1['_尾款美元']) +
+          ' 美元（可为负 = 退款/冲回）。');
+      }
+    }
+    var notes3 = [];
+    var s3 = results.stage_3;
+    var pay3 = (s3 && s3['_付款明细']) || [];
+    if (pay3.length) {
+      notes3.push('D→E 付款明细（' + pay3.length + ' 笔）：' + pay3.map(function (p) {
+        var amt = fmtValue('金额', p['金额元']);
+        var tag = p['尾款'] ? '尾款' : '';
+        var d = p['日期'] ? p['日期'] + ' ' : '';
+        return d + amt + ' 元' + (tag ? '（' + tag + '）' : '');
+      }).join('；') + '。汇率沿用 A→B 加权汇率。');
+      if (s3['_有尾款']) {
+        notes3.push('尾款 = 最终货值 − 已付各笔 = ' + fmtValue('金额', s3['_尾款元']) +
+          ' 元（可为负 = 退款/冲回）。');
+      }
+    }
+    // 按实际执行的环节动态组装（步骤2/步骤3 可能不存在）
+    var stages = [];
+    stages.push([C.stage1 || '第一步 · A → B', results.stage_1, C.flow1, notes1]);
+    if (results.stage_2) stages.push([C.stage2 || '第二步 · B → C', results.stage_2, C.flow2, []]);
+    if (results.stage_3) stages.push([C.stage3 || '第三步 · D → E', results.stage_3, C.flow3, notes3]);
     var html = stages.map(function (st) {
       var data = {};
-      for (var k in st[1]) { data[k] = st[1][k]; }
+      for (var k in st[1]) { if (!INTERNAL_KEYS[k]) data[k] = st[1][k]; }
       if (st[2]) { data['公司流转'] = st[2]; }
       var rows = Object.keys(data).map(function (k) {
         var v = data[k];
@@ -980,7 +1293,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         return '<tr><th>' + k + '</th><td class="' + (isFlow ? 'flow' : 'num') + '">' +
           escapeHtml(fmtValue(k, v)) + '</td></tr>';
       }).join('');
-      return '<div class="result-card"><h3>' + st[0] + '</h3><table>' + rows + '</table></div>';
+      var note = st[3].length
+        ? '<p class="res-note">' + st[3].join('<br>') + '</p>' : '';
+      return '<div class="result-card"><h3>' + st[0] + '</h3><table>' + rows +
+        '</table>' + note + '</div>';
     }).join('');
     $('result-body').innerHTML = html;
   }
@@ -1011,6 +1327,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         $('daily_volumes_2').value = parsed.volumes.join('\n');
         $('stage3_switch').value = parsed.switchRows.join('\n');
         $('stage3_fixing').value = parsed.fixingRows.join('\n');
+        $('payments_ab').value = parsed.payABRows.join('\n');
+        $('payments_de').value = parsed.payDERows.join('\n');
         saveForm();
         toast('导入成功！参数 ' + Object.keys(parsed.params).length + ' 项，每日行情 ' +
           parsed.prices.length + ' 行，转月 ' + parsed.switchRows.length + ' 行，点价 ' +
@@ -1036,7 +1354,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   $('btn-clear').addEventListener('click', function () {
     if (!confirm('确定清空所有输入内容吗？')) return;
     inputEls().forEach(function (el) { el.value = ''; });
-    ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing'].forEach(function (id) {
+    ['daily_prices_1', 'daily_volumes_2', 'stage3_switch', 'stage3_fixing', 'payments_ab', 'payments_de'].forEach(function (id) {
       $(id).value = '';
     });
     try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) { }
